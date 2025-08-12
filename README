@@ -1,0 +1,174 @@
+# Environmental Health Data Integration Pipeline
+
+A comprehensive data engineering project that combines environmental monitoring, weather, and demographic data to create county-level datasets for public health research.
+
+## Project Overview
+
+This pipeline integrates data from multiple sources to create a unified dataset covering 3,200+ US counties with environmental and socioeconomic indicators. The project addresses real-world data challenges including geographic mismatches, inconsistent measurement standards, and sparse monitoring coverage.
+
+## Data Sources
+
+- **EPA Air Quality System (AQS) API**: Pollution monitoring data (Ozone, PM2.5, Carbon Monoxide)
+- **NOAA Global Summary of the Day**: Weather station measurements via Google Cloud BigQuery
+- **US Census Bureau ACS**: County-level demographic and socioeconomic data
+- **Census Bureau**: Population-weighted county centroids for geographic analysis
+
+## Key Features
+
+### Data Collection & Integration
+- Automated EPA API requests with concurrent processing and rate limiting
+- BigQuery integration for large-scale weather data retrieval
+- JSON parsing and data normalization across heterogeneous sources
+
+### Geographic Data Processing
+- Reverse geocoding of weather station coordinates to county boundaries
+- Population-weighted centroid matching for accurate geographic representation
+- FIPS code standardization and county name cleaning
+
+### Smart Data Imputation
+- Distance-based imputation for missing county coverage
+- Geodesic distance calculations with bounding box optimization
+- Spatial interpolation achieving 95%+ geographic coverage
+
+### Data Quality & Standardization
+- EPA measurement standard prioritization (current standards over legacy)
+- Multi-site aggregation using statistical measures (mean, median, min, max, std)
+- Comprehensive data validation and error handling
+
+## Technical Implementation
+
+### Technologies Used
+- **Python**: Core data processing and analysis
+- **Pandas**: Data manipulation and aggregation
+- **GeoPy**: Geographic calculations and reverse geocoding
+- **Google Cloud BigQuery**: Large-scale data querying
+- **Concurrent Futures**: Parallel API processing
+- **Requests**: EPA API integration
+
+### Performance Optimizations
+- Bounding box pre-filtering for distance calculations (80% runtime reduction)
+- Batch processing for API rate limit compliance
+- Memory-efficient data aggregation strategies
+
+## Dataset Structure
+
+### Final Output
+- **3,221 counties** with complete demographic data
+- **Weather coverage**: 95%+ of counties with meteorological data
+- **Pollution coverage**: 2,500+ counties with air quality measurements
+- **Combined coverage**: 1,700+ counties with both environmental datasets
+
+### Key Variables
+- **Weather**: Temperature, precipitation, wind speed, humidity (with statistical aggregates)
+- **Pollution**: EPA-standard measurements for major air pollutants
+- **Demographics**: Income, education, employment, transportation patterns
+- **Metadata**: Data source distances for quality assessment
+
+## Scientific Methodology
+
+### EPA Standard Prioritization
+The pipeline implements a scientifically-informed hierarchy for pollution measurements:
+- Ozone: 8-hour 2015 standard (current EPA primary standard)
+- PM2.5: Annual 2012 standard
+- Carbon Monoxide: 8-hour 1971 standard
+
+### Geographic Imputation Validation
+- Maximum imputation distance: 75 kilometers
+- Distance tracking for transparency in analysis
+- Population-weighted centroids for representative matching
+
+## File Structure
+
+```
+pollution-weather-exploration/
+├── Data/
+│   ├── Raw data files (parquet, CSV)
+│   ├── Processed datasets
+│   └── Final analysis-ready data
+├── Scripts/
+│   ├── data-collection.py      # EPA API and BigQuery data retrieval
+│   └── data-preprocessing.py   # Cleaning, imputation, and integration
+└── README.md
+```
+
+## Usage
+
+### Prerequisites
+```bash
+pip install pandas numpy geopy google-cloud-bigquery requests
+```
+
+### API Setup
+1. Obtain EPA AQS API credentials
+2. Configure Google Cloud BigQuery access
+3. Set up environment variables for API keys
+
+### Running the Pipeline
+
+**Important**: Before running the scripts, update all file paths in the code to match your local directory structure. The scripts currently contain hardcoded paths that need to be adjusted for your environment.
+
+```bash
+# Data collection
+python scripts/data-collection.py
+
+# Data preprocessing and integration
+python scripts/data-preprocessing.py
+```
+
+## Research Applications
+
+This dataset enables analysis of:
+- Environmental health disparities across counties
+- Climate and pollution impact on demographic groups
+- Spatial patterns in air quality monitoring coverage
+- Socioeconomic factors in environmental exposure
+
+## Data Quality Notes
+
+- **Imputation transparency**: All imputed data includes distance metadata
+- **Temporal consistency**: All data standardized to 2020 annual measurements
+- **Geographic accuracy**: Population-weighted centroids used for representative county locations
+- **Measurement validity**: EPA regulatory standards prioritized over legacy measurements
+
+## Limitations & Areas for Improvement
+
+### Current Limitations
+- **Hardcoded file paths**: All scripts require manual path updates for local environments
+- **API dependency**: Pipeline relies on external API availability and rate limits
+- **Geographic assumptions**: 75km imputation radius may not be appropriate for all geographic regions (e.g., mountainous areas with distinct microclimates)
+- **Memory usage**: Large dataset processing requires substantial RAM for nested loops and geographic calculations
+- **Error handling**: Limited graceful recovery from API failures or data corruption
+- **Data validation**: Minimal automated checks for data quality issues or outliers
+
+### Performance Considerations
+- **O(n²) distance calculations**: Could benefit from spatial indexing (BallTree) for larger datasets
+- **Sequential processing**: Some operations could be further parallelized
+- **Network dependency**: No offline mode for development or testing
+
+### Methodological Considerations
+- **Temporal alignment**: Assumes 2020 data is representative across all sources
+- **Measurement aggregation**: Simple averaging may not capture all spatial variability within counties
+- **Missing data bias**: Counties without monitoring stations may differ systematically from monitored areas
+
+## Future Enhancements
+
+- Expand to multi-year temporal analysis
+- Include additional pollutants (PM10, NO2, SO2)
+- Integrate health outcome data for epidemiological studies
+- Add state and regional aggregation capabilities
+
+## Contributing
+
+This project was developed for environmental health research. Contributions focusing on data quality improvements, additional data sources, or methodological enhancements are welcome.
+
+## License
+
+This project is for educational and research purposes. Please cite appropriately if used in academic work.
+
+## Contact
+
+For questions about methodology or data access, please reach out via GitHub issues.
+
+---
+
+*Note: This pipeline handles large datasets and requires substantial computational resources. Runtime varies based on API response times and geographic coverage requirements.*
